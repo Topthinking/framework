@@ -1,0 +1,16 @@
+{
+  "name": "upload-download",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:Topthinking/upload-download.git",
+  "author": "top.sun <top.sun@nio.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "npm run build && vite preview"
+  },
+  "devDependencies": {
+    "vite": "^2.9.13"
+  }
+}
