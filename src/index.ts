@@ -34,37 +34,80 @@ export const useState = (value): any => {
   return [v, setV];
 };
 
-let hExist: any = null;
-
 const h = (type, props, ...children) => {
-  const run = () => {
-    let newChildren = "";
+  const newChildren: any = [];
+  elementFn = () => {
+    const newChildren: any = [];
     children.forEach((child) => {
       if (child.refName === refName) {
-        newChildren += child.value;
+        newChildren.push(child.value);
       } else {
-        newChildren += child;
+        newChildren.push(child.instance || child);
       }
     });
-
-    if (hExist) {
-      hExist.innerText = newChildren;
-    } else {
-      hExist = document.createElement(type);
-      hExist.onclick = props.onClick;
-      hExist.innerText = newChildren;
+    if (obj.instance) {
+      var fragment = document.createDocumentFragment();
+      newChildren.forEach((item) => {
+        if (!(item instanceof HTMLElement)) {
+          fragment.appendChild(document.createTextNode(item));
+        } else {
+          fragment.appendChild(item);
+        }
+      });
+      obj.instance.innerHTML = "";
+      obj.instance.appendChild(fragment);
     }
-    return hExist;
   };
-  elementFn = run;
-  const ele = run();
+  let hasRef = false;
+  children.forEach((child) => {
+    if (child.refName === refName) {
+      hasRef = true;
+      newChildren.push(child.value);
+    } else {
+      newChildren.push(child);
+    }
+  });
+  if (!hasRef) {
+    doms.pop();
+  }
+  const obj: any = {
+    type,
+    props,
+    instance: null,
+    children: newChildren,
+  };
   elementFn = null;
-  return ele;
+  return obj;
 };
 
 export const render = (instance, ele) => {
   const el = instance();
-  ele.appendChild(el);
+  const loop = (ve) => {
+    if (ve.children) {
+      let childInfo = "";
+      const dom = document.createElement(ve.type);
+      ve.children.forEach((child) => {
+        const info = loop(child);
+        if (!(info instanceof HTMLElement)) {
+          childInfo += info;
+        } else {
+          child.instance = info;
+          dom.appendChild(info);
+        }
+      });
+
+      dom.appendChild(document.createTextNode(childInfo));
+      if (ve.props && ve.props.onClick) {
+        dom.onclick = ve.props.onClick;
+      }
+      return dom;
+    } else {
+      return ve;
+    }
+  };
+  const result = loop(el);
+  el.instance = result;
+  ele.appendChild(result);
 };
 
 export const jsx = h;
